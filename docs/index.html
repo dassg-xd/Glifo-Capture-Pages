@@ -62,7 +62,7 @@ h2{margin:0;color:var(--ink);font-size:15px;font-weight:700}
 .prompt span{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700}
 .prompt b{font-family:var(--letra);font-size:40px;line-height:48px;padding-bottom:22px;margin-bottom:-14px;color:var(--ink);font-weight:500;min-width:28px;text-align:center}
 
-.canvas-box{position:relative;margin:18px auto 0;width:100%;max-width:560px;aspect-ratio:1;max-height:70vh}
+.canvas-box{position:relative;margin:18px auto 0;width:min(100%,560px,70vh);aspect-ratio:1}
 canvas#cv{width:100%;height:100%;display:block;border-radius:14px;border:1.5px dashed var(--guide-strong);background:var(--surface);touch-action:none;cursor:crosshair}
 .stamp{position:absolute;left:50%;top:14px;transform:translateX(-50%);background:var(--teal);color:var(--primary-ink);
   font-weight:700;font-size:14px;padding:6px 14px;border-radius:999px;animation:pop 1.6s ease forwards;white-space:nowrap;max-width:92%;overflow:hidden;text-overflow:ellipsis}
