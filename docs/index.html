@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Glifo Captura</title>
+<meta name="description" content="Captura colaborativa de trazos de letras para entrenar los modelos HMM de Glifo.">
+<style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+<style>
+/* Solo la «a» y la «q» usan la letra escolar (Playwrite AR); el resto de letras queda en la fuente del sistema */
+@font-face{font-family:"Glifo Escolar";font-weight:400;font-display:swap;unicode-range:U+0061,U+0071;size-adjust:104%;ascent-override:100%;descent-override:30%;line-gap-override:0%;src:url(data:font/woff2;base64,d09GMgABAAAAAAVIABAAAAAADFwAAATsAAEAxQAAAAAAAAAAAAAAAAAAAAAAAAAAGiIbgiocgjoGYD9TVEFUKgA8EQgKigyIMAE2AiQDMgscAAQgBYN0ByAMBxtKCiguC3hDNPUbIkEEL6rWGoofg/e9ghDB83n9V+cGzfQHOYK9BbCaN/k/u/yze4EOjic0NrAqUV06uFOVLi9dSiKjFf0pADcAS3K/wvDsCJHid///vaq52fgfYNaiiAQT4Iis8bL2y9idG+ekFHQszSmV5gBaQ7xasBa0BSlWBPuyzW5uwip8eS2BLiDkmqJJZ9w/I20Li0esvKp/OND33qGsABTQoK4lJAiia7bXLiUFwD275MyKgKpMQspDoB9A08pKEJpCUzIcDZvCkBw4WnINUZjArRPIJDAGo5GUGMmEZ3RJaEOkBQ+OBjdRsgMhY+na2IlCyQUdRImwc1t/fApQ2g+cGUcxTktfTLx0JzPn0CHUY6cd8spAHJO23XuWNu1uT3pfsvGwj+V6BpODEQovcXlmtKFjAk3Y42ZyFIwUBkOOPTWRhATcRsDJnh2LNOmTPevmhBwL25KlQWMCPc1y6UQEpD0YmS7FN6VbSpZZhzW+yxE0nvSpV6elK5enp+N8BenMtDmw1q1mbMs09MGmGR5o440BPG8HxcXXRzk0+QMB8Xc+AxiP/N67ZDCE0YjDdssqQ0OBJJBiZPSChAxPTSWimQ6lcTZpLNU1Ram+qb58fhGEqGv9QAVGAgNB3Ej8ienAZACSxGUsDI15pnJ5+4VgNl19yB7nSNNz0/wzTun59NM44bPP3vusc9YnM6L5NqmzboF0/BVDUmddNiK47BbeJVdwL378UPLMR9fH5U64FN399sub/pN3Ome99dy8WH+1febDp5uzorbdPP5myTNvRQVfPNaVVe2rpKqzroDjL5eUUlrC+advMZDr3/tsoQmvW+/OmW/eeyPKzPTfIyWgOqOrTX24Kyc27hd57GJH/rLblrjXf/z+x/t4c+Rma4+8WjyabOTc7ujkr5H43Ub9l4iyXKAwwnxglMYqSR6yM7Eb9/2i3zZDh/rTT6/2/6zVfrlTd9lpZ/BW2xmyF3eYbNndxODn6as1tNWLDfTRHuP2MfjPL68eP/JmufPe01Mq7iyq2nrIrjKDKv+hQ+Jl9j0gPV+C6Hfyr189957zFhjYXvVOGziE3dmrThlY8AZFqa9SeJhOhPIIv0Zv3jS5h3nnvTdD0H+Ayd8Lr67339C1XYN85Wv9/zh9S8Y2Q4f407eec/OUVsfsEiphX3XN/r1bN+WN/Ru3ntPY0dOVFlbxD/YUsOuvfPwnK/T32bI8+ifecaRKm9zF5E+uLr5JKZwPrJiKQEMWHz3ErGif79NaHViuPu2fGtae4Rjecn1Pp4NgbTj+7QLhleUOcE5LYiz9TzPLvgdfrlr4rn3/Eel7vPi3LFBKIPj5HAMx3P8rE+/g7Tzd7DMuSPtzSpGcQL1J2hdwFq6olp+6P6ivTKdZ7oMGrc0fQuU8XadoCAXOwONaDkSKvIX7KUVhuF1R0vO6KLO4d1FuetBFhZFhKSxNjWCVGEo6DsUjpd30SgoVqVYiW6YsZTBTxkyZwcJloWDB8qSoVon2lDEMJSqUg9N4D3dRrkyWQiVKYdoyDytTpJQtI0YyZeMayqUyLAYWymckXPXcQAlXWDCo1SgljHRPr2NPwkXo3kTJVI7pWMKEIeOcZ8ZO+HR23KZmCoN8ZDqmwi2JRPm6VbZCBbDWsdCWjUJFPUTa9NVXW1Dnx6M+5X7aOQA=) format("woff2")}
+/* Layout: Glifo app shell — header bar, lienzo card (left, wide) + panel de dataset y grupos (right); stacks on phones */
+:root{
+  --bg:#f2f6f9; --surface:#ffffff; --line:#dde7ee; --chip:#e4eef5;
+  --ink:#1b4560; --text:#2f4656; --muted:#627888;
+  --primary:#2b6a94; --primary-ink:#ffffff; --teal:#3d8f7c; --teal-soft:#dcefe9;
+  --guide:#c9d8e3; --guide-strong:#9fbbcf; --danger:#b5483b; --live:#d39a2c;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --letra: "Glifo Escolar", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1a22; --surface:#16242e; --line:#25394a; --chip:#1d3140;
+  --ink:#d6e7f3; --text:#bfd2df; --muted:#8aa1b2;
+  --primary:#4f97c7; --primary-ink:#0b1720; --teal:#5fb39e; --teal-soft:#1d3a34;
+  --guide:#2a4152; --guide-strong:#3f5d73; --danger:#e07a6c; --live:#e2b04f; color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0f1a22; --surface:#16242e; --line:#25394a; --chip:#1d3140;
+  --ink:#d6e7f3; --text:#bfd2df; --muted:#8aa1b2;
+  --primary:#4f97c7; --primary-ink:#0b1720; --teal:#5fb39e; --teal-soft:#1d3a34;
+  --guide:#2a4152; --guide-strong:#3f5d73; --danger:#e07a6c; --live:#e2b04f; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.45}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line);
+  padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.bar{max-width:1280px;margin:0 auto;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;color:var(--ink);font-weight:700;font-size:20px}
+.brand small{font-weight:500;font-size:13px;color:var(--muted);border-left:1px solid var(--line);padding-left:10px}
+.status{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);background:var(--chip);border-radius:999px;padding:6px 12px}
+.status i{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.status[data-s="ok"] i{background:var(--teal)}
+.status[data-s="local"] i{background:var(--live)}
+
+.wrap{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:24px;
+  padding-block:24px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+@media (max-width:900px){.wrap{grid-template-columns:minmax(0,1fr)}}
+.col{display:flex;flex-direction:column;gap:24px;min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px;min-width:0}
+h2{margin:0;color:var(--ink);font-size:15px;font-weight:700}
+.sub{margin:2px 0 0;color:var(--muted);font-size:13px}
+
+.lienzo-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.lienzo-head > div:first-child{flex:1 1 260px;min-width:0}
+.prompt{display:flex;align-items:center;gap:12px;background:var(--chip);border-radius:12px;padding:8px 16px 8px 14px}
+.prompt span{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+.prompt b{font-family:var(--letra);font-size:40px;line-height:48px;padding-bottom:22px;margin-bottom:-14px;color:var(--ink);font-weight:500;min-width:28px;text-align:center}
+
+.canvas-box{position:relative;margin:18px auto 0;width:100%;max-width:560px;aspect-ratio:1;max-height:70vh}
+canvas#cv{width:100%;height:100%;display:block;border-radius:14px;border:1.5px dashed var(--guide-strong);background:var(--surface);touch-action:none;cursor:crosshair}
+.stamp{position:absolute;left:50%;top:14px;transform:translateX(-50%);background:var(--teal);color:var(--primary-ink);
+  font-weight:700;font-size:14px;padding:6px 14px;border-radius:999px;animation:pop 1.6s ease forwards;white-space:nowrap;max-width:92%;overflow:hidden;text-overflow:ellipsis}
+.stamp.err{background:var(--danger)}
+@keyframes pop{0%{opacity:0;transform:translate(-50%,-6px)}12%{opacity:1;transform:translate(-50%,0)}80%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.stamp{animation:none}}
+
+.readout{display:flex;justify-content:center;gap:22px;flex-wrap:wrap;margin-top:12px;font-family:var(--mono);font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.readout b{color:var(--ink);font-weight:600}
+.actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:16px}
+.btn{border:1px solid var(--line);background:var(--surface);color:var(--primary);font-weight:700;font-size:15px;padding:10px 20px;border-radius:10px}
+.btn:hover:not(:disabled){border-color:var(--primary)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.primary{background:var(--primary);border-color:var(--primary);color:var(--primary-ink)}
+.btn.primary:hover:not(:disabled){filter:brightness(1.07)}
+.btn.teal{background:var(--teal);border-color:var(--teal);color:var(--primary-ink)}
+.aviso{text-align:center;margin:10px 0 0;font-size:13px;font-weight:600;color:var(--danger)}
+.field input[aria-invalid="true"]{border-color:var(--danger)}
+.keys{text-align:center;margin:12px 0 0;font-size:13px;color:var(--muted)}
+.keys kbd{font-family:var(--mono);font-size:11px;background:var(--chip);border-radius:5px;padding:1px 6px;color:var(--ink)}
+
+.panel{display:flex;flex-direction:column;gap:22px}
+.fields{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+@media (max-width:420px){.fields{grid-template-columns:minmax(0,1fr)}}
+.field label{display:block;font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.field input,.field select{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:9px 12px}
+.field input:focus,.field select:focus{outline:none;border-color:var(--primary)}
+
+.total{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.total .n{font-family:var(--mono);font-size:22px;color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.total .n small{font-size:13px;color:var(--muted);font-weight:400}
+.meter{height:6px;background:var(--chip);border-radius:6px;overflow:hidden;margin-top:8px}
+.meter i{display:block;height:100%;background:var(--primary);border-radius:6px;transition:width .3s}
+
+.grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-top:12px}
+@media (max-width:420px){.grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
+.tile{position:relative;border:1.5px solid transparent;background:var(--chip);border-radius:10px;padding:6px 4px 10px;display:flex;flex-direction:column;align-items:center;overflow:hidden}
+.tile .l{display:block;font-family:var(--letra);font-size:24px;line-height:34px;height:46px;color:var(--ink)}
+.tile .c{font-family:var(--mono);font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.tile .f{position:absolute;left:0;bottom:0;height:3px;background:var(--primary);transition:width .3s}
+.tile .vivo{position:absolute;top:5px;right:5px;min-width:16px;height:16px;border-radius:8px;background:var(--live);color:#1b1305;font-size:10px;font-weight:700;line-height:16px;text-align:center;padding:0 4px}
+.tile.done{background:var(--teal-soft)}
+.tile.done .f{background:var(--teal)}
+.tile[aria-pressed="true"]{border-color:var(--primary);background:var(--surface)}
+.tile:hover{border-color:var(--guide-strong)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.linkbtn{background:none;border:none;color:var(--primary);font-weight:700;font-size:14px;padding:4px 0}
+
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(68px,1fr));gap:8px;margin-top:10px}
+.thumb{position:relative;aspect-ratio:1;border:1px solid var(--line);border-radius:8px;background:var(--bg);overflow:hidden}
+.thumb canvas{width:100%;height:100%;display:block}
+.thumb button{position:absolute;top:3px;right:3px;border:none;border-radius:6px;background:var(--surface);color:var(--muted);font-size:11px;line-height:1;padding:4px 6px;opacity:.85}
+.thumb button.confirm{background:var(--danger);color:#fff;opacity:1}
+.thumb .g{position:absolute;left:3px;bottom:3px;font-size:10px;line-height:1;background:var(--surface);color:var(--muted);border-radius:4px;padding:2px 4px;max-width:90%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.empty{font-size:14px;color:var(--muted);background:var(--bg);border:1px dashed var(--line);border-radius:10px;padding:14px;margin-top:10px}
+
+/* equipo */
+.equipo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px}
+@media (max-width:700px){.equipo{grid-template-columns:minmax(0,1fr)}}
+.lista{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:10px}
+.grp{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;align-items:baseline}
+.grp .nm{font-weight:700;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.grp.mio .nm::after{content:" · tu grupo";font-weight:400;color:var(--teal);font-size:13px}
+.grp .num{font-family:var(--mono);font-size:13px;color:var(--ink);font-variant-numeric:tabular-nums}
+.grp .det{grid-column:1/-1;font-size:13px;color:var(--muted)}
+.grp .meter{grid-column:1/-1;margin-top:2px;height:5px}
+.grp.mio .meter i{background:var(--teal)}
+.act{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;align-items:center;font-size:14px}
+.act .lt{font-family:var(--letra);font-size:18px;line-height:30px;height:40px;text-align:center;background:var(--chip);border-radius:8px;color:var(--ink)}
+.act .who{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.act .who b{color:var(--ink)}
+.act .who span{color:var(--muted)}
+.act time{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.act.vivo .lt{background:var(--live);color:#1b1305}
+.sec-t{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin:16px 0 0}
+
+.export{border-top:1px solid var(--line);padding-top:18px;display:flex;flex-direction:column;gap:10px}
+.export p{margin:0;font-size:14px;color:var(--muted)}
+.export code{font-family:var(--mono);font-size:12px;color:var(--ink)}
+.msg{font-size:14px;color:var(--muted)}
+textarea#fallback{width:100%;height:160px;font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-radius:10px;background:var(--bg);padding:10px;resize:vertical}
+.btn.chico{padding:7px 14px;font-size:13px}
+.config{max-width:1280px;margin:16px auto 0;background:var(--chip);border:1px solid var(--line);border-radius:12px;padding:12px 16px;font-size:14px;color:var(--ink)}
+.config-wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.config code{font-family:var(--mono);font-size:12.5px}
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <div class="brand">
+      <svg width="34" height="24" viewBox="0 0 34 24" aria-hidden="true"><path d="M3 21 C6 9 10 3 13 4 C16 5 13 16 12 19 L21 6" fill="none" stroke="var(--primary)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M25 5 h5" stroke="var(--teal)" stroke-width="2.6" stroke-linecap="round"/></svg>
+      Glifo <small>Captura de dataset · beta</small>
+    </div>
+    <div class="status" id="status" data-s="wait"><i></i><span id="statusTxt">Conectando…</span></div>
+    <button class="btn chico" id="bDirector">Entrar como director</button>
+  </div>
+</header>
+<div class="config-wrap" id="configAviso" hidden><div class="config"><b>Falta conectar la base de datos.</b> Las muestras se guardan solo en este navegador hasta que pegues los datos de tu proyecto en <code>firebase-config.js</code> (los pasos están en el README).</div></div>
+
+<main class="wrap">
+  <div class="col">
+    <section class="card">
+      <div class="lienzo-head">
+        <div>
+          <h2>Lienzo de captura 2D</h2>
+          <p class="sub">Dibuja la letra completa como en el modelo de la derecha. Puedes levantar el lápiz entre trazos (punto de la i, tilde de la ñ, cruz de la q).</p>
+        </div>
+        <div class="prompt"><span>Dibuja</span><b id="promptLetter">a</b></div>
+      </div>
+      <div class="canvas-box">
+        <canvas id="cv" aria-label="Lienzo para dibujar la letra"></canvas>
+        <div class="stamp" id="stamp" hidden></div>
+      </div>
+      <div class="readout">
+        <span>trazos <b id="rTrazos">0</b></span>
+        <span>puntos <b id="rPuntos">0</b></span>
+        <span>duración <b id="rDur">0.00 s</b></span>
+      </div>
+      <div class="actions">
+        <button class="btn" id="bUndo" disabled>Deshacer trazo</button>
+        <button class="btn" id="bClear" disabled>Limpiar</button>
+        <button class="btn primary" id="bSave" disabled>Guardar muestra</button>
+      </div>
+      <p class="aviso" id="aviso" hidden></p>
+      <p class="keys"><kbd>Enter</kbd> guarda · <kbd>Z</kbd> deshace el último trazo · <kbd>Esc</kbd> limpia</p>
+    </section>
+
+    <section class="card">
+      <div class="equipo">
+        <div>
+          <div class="row"><h2>Avance por grupo</h2><span class="msg" id="nGrupos"></span></div>
+          <ul class="lista" id="grupos"></ul>
+          <div class="empty" id="gruposEmpty">Aún no hay muestras. Escribe el nombre de tu grupo arriba a la derecha y guarda la primera letra.</div>
+        </div>
+        <div>
+          <div class="row"><h2>En vivo</h2><span class="msg" id="nLinea"></span></div>
+          <p class="sec-t">Dibujando ahora</p>
+          <ul class="lista" id="ahora"></ul>
+          <div class="empty" id="ahoraEmpty">Nadie más tiene la página abierta en este momento.</div>
+          <p class="sec-t">Últimas muestras</p>
+          <ul class="lista" id="recientes"></ul>
+          <div class="empty" id="recientesEmpty">Las muestras de todos los grupos aparecerán aquí al guardarse.</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <aside class="card panel">
+    <div class="fields">
+      <div class="field">
+        <label for="autor">Quién dibuja</label>
+        <input id="autor" placeholder="Tu nombre" maxlength="40" autocomplete="off" required>
+      </div>
+      <div class="field">
+        <label for="grupo">Grupo</label>
+        <input id="grupo" placeholder="p. ej. Grupo 2" maxlength="30" autocomplete="off" list="gruposLista" required>
+        <datalist id="gruposLista"></datalist>
+      </div>
+    </div>
+
+    <div>
+      <div class="total">
+        <h2>Progreso del dataset</h2>
+        <span class="n" id="totalN">0 <small>/ 810</small></span>
+      </div>
+      <div class="meter"><i id="totalBar" style="width:0%"></i></div>
+      <p class="sub">Meta: 30 muestras por letra × 27 letras, sumando todos los grupos. El número amarillo indica cuántas personas dibujan esa letra ahora.</p>
+      <div class="grid" id="grid"></div>
+      <div class="row" style="margin-top:10px">
+        <span class="msg" id="pendientes"></span>
+        <button class="linkbtn" id="bNext">Siguiente letra con menos muestras →</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="row">
+        <h2 id="recentTitle">Muestras de «a»</h2>
+        <span class="msg" id="recentCount"></span>
+      </div>
+      <div class="thumbs" id="thumbs"></div>
+      <div class="empty" id="thumbsEmpty">Todavía no hay muestras de esta letra. Dibuja la primera en el lienzo y pulsa Guardar.</div>
+    </div>
+
+    <div class="export">
+      <h2>Exportar para entrenar</h2>
+      <p>Un solo archivo con las muestras de todos los grupos, o solo las de uno. Cada punto es <code>[x, y, t_ms]</code> en un espacio de 0 a 1000.</p>
+      <div class="field">
+        <label for="filtro">Incluir</label>
+        <select id="filtro"><option value="">Todos los grupos</option></select>
+      </div>
+      <button class="btn teal" id="bExport">Descargar dataset .json</button>
+      <span class="msg" id="exportMsg"></span>
+      <textarea id="fallback" hidden readonly aria-label="Contenido del dataset en JSON"></textarea>
+    </div>
+  </aside>
+</main>
+<script type="module" src="./app.js"></script>
+</body>
+</html>
