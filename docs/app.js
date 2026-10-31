@@ -290,7 +290,7 @@ setInterval(() => renderVivo(), 30000);
 function sello(txt, err) {
   const s = $("stamp"); s.hidden = true; void s.offsetWidth;
   s.textContent = txt; s.className = "stamp" + (err ? " err" : ""); s.hidden = false;
-  clearTimeout(sello.t); sello.t = setTimeout(() => s.hidden = true, 2200);
+  clearTimeout(sello.t); sello.t = setTimeout(() => s.hidden = true, err ? 6000 : 2200);
 }
 function estado(s, txt) { modo = s; $("status").dataset.s = s; $("statusTxt").textContent = txt; actualizarLectura(); }
 
@@ -336,7 +336,10 @@ async function guardar() {
 async function borrar(m) {
   if (db) {
     try { await update(ref(db), { ["indice/" + m.id]: null, ["trazos/" + m.id]: null }); }
-    catch (e) { sello("Solo puedes borrar las muestras que publicaste tú.", true); }
+    catch (e) {
+      sello(esDirector ? "Firebase rechazó el borrado. Revisa que el correo de las reglas sea el mismo con el que entraste."
+                       : "Solo puedes borrar las muestras que publicaste tú.", true);
+    }
   } else {
     delete indice[m.id]; delete trazosCache[m.id]; guardarLocal(); pedirRender();
   }
@@ -386,16 +389,33 @@ function arrancarTiempoReal() {
 }
 
 // ---------- director ----------
-async function comprobarDirector() {
+const espera = ms => new Promise(r => setTimeout(r, ms));
+// La regla de /director solo deja leer al correo del director: si la lectura no es rechazada, es el director.
+// Justo después de iniciar sesión con Google, la conexión con la base puede seguir usando la identidad
+// anónima unos instantes, así que se reintenta varias veces antes de concluir que no es el director.
+async function comprobarDirector(intentos = 1) {
   esDirector = false;
   const u = auth.currentUser;
   if (u && !u.isAnonymous) {
-    // La regla de /director solo deja leer al correo del director: si la lectura no es rechazada, es el director.
-    try { await get(ref(db, "director")); esDirector = true; } catch (e) { esDirector = false; }
+    for (let i = 0; i < intentos && !esDirector; i++) {
+      if (i) await espera(700);
+      try { await get(ref(db, "director")); esDirector = true; } catch (e) { esDirector = false; }
+    }
   }
-  $("bDirector").textContent = esDirector ? "Salir del modo director" : (u && !u.isAnonymous ? "Salir" : "Entrar como director");
+  const correo = u && !u.isAnonymous ? (u.email || (u.providerData[0] || {}).email || "Google") : "";
+  $("bDirector").textContent = esDirector ? "Salir del modo director" : (correo ? `Salir (${correo})` : "Entrar como director");
+  $("bDirector").title = correo ? "Sesión iniciada con " + correo : "";
   if (conectado) estado("ok", esDirector ? "Dataset compartido · director" : "Dataset compartido");
   pedirRender();
+}
+function mensajeGoogle(code) {
+  const m = {
+    "auth/operation-not-allowed": "Google no está activado en Firebase: Authentication → Método de acceso → Google.",
+    "auth/unauthorized-domain": "Este dominio no está autorizado: agrégalo en Authentication → Configuración → Dominios autorizados.",
+    "auth/popup-blocked": "El navegador bloqueó la ventana de Google. Permite las ventanas emergentes para esta página.",
+    "auth/network-request-failed": "No hay conexión con Google. Revisa tu internet."
+  };
+  return m[code] || `No se pudo iniciar sesión con Google (${code || "error desconocido"}).`;
 }
 $("bDirector").onclick = async () => {
   if (!auth) { sello("Primero hay que configurar Firebase (ver README).", true); return; }
@@ -415,14 +435,31 @@ $("bDirector").onclick = async () => {
       }
       else throw e;
     }
-    await comprobarDirector();
-    if (!esDirector) sello("Esa cuenta no es la del director. Las muestras siguen funcionando normal.", true);
+    await auth.currentUser.getIdToken(true);
+    await comprobarDirector(6);
+    if (!esDirector) {
+      const c = auth.currentUser && (auth.currentUser.email || (auth.currentUser.providerData[0] || {}).email);
+      sello(`La cuenta ${c || ""} no coincide con el correo del director en las reglas de Firebase.`, true);
+    }
   } catch (e) {
-    if (e && e.code !== "auth/popup-closed-by-user" && e.code !== "auth/cancelled-popup-request") sello("No se pudo iniciar sesión con Google.", true);
+    if (e && e.code !== "auth/popup-closed-by-user" && e.code !== "auth/cancelled-popup-request") sello(mensajeGoogle(e && e.code), true);
   }
 };
 
 // ---------- exportar ----------
+// JSON legible: cabecera con una clave por línea, cada muestra en su bloque y cada trazo en una sola fila.
+function jsonLegible(data) {
+  const { muestras, ...cab } = data;
+  const linea = (k, v, sangria) => sangria + JSON.stringify(k) + ": " + JSON.stringify(v);
+  const bloques = muestras.map(m => {
+    const { trazos, ...meta } = m;
+    const filas = trazos.map(t => "        " + JSON.stringify(t)).join(",\n");
+    return "    {\n" + Object.entries(meta).map(([k, v]) => linea(k, v, "      ")).join(",\n") +
+      ',\n      "trazos": [\n' + filas + "\n      ]\n    }";
+  });
+  return "{\n" + Object.entries(cab).map(([k, v]) => linea(k, v, "  ")).join(",\n") +
+    ',\n  "muestras": [\n' + bloques.join(",\n") + "\n  ]\n}\n";
+}
 $("bExport").onclick = async () => {
   const filtro = $("filtro").value, msg = $("exportMsg");
   let todos = {};
@@ -448,7 +485,7 @@ $("bExport").onclick = async () => {
   const sufijo = filtro ? "-" + filtro.toLowerCase().normalize("NFD").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") : "";
   const nombre = `glifo-dataset${sufijo}-${new Date().toISOString().slice(0, 10)}.json`;
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob([JSON.stringify(data)], { type: "application/json" }));
+  a.href = URL.createObjectURL(new Blob([jsonLegible(data)], { type: "application/json" }));
   a.download = nombre; document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 4000);
   msg.textContent = `${salida.length} muestras exportadas en ${nombre}.`;
@@ -478,7 +515,7 @@ if (!configurado) {
       if (!arrancado) { arrancado = true; arrancarTiempoReal(); }
       onDisconnect(ref(db, "presencia/" + uid)).remove().catch(() => {});
       seguirLetra(); anunciar();
-      await comprobarDirector();
+      await comprobarDirector(4);
       if (modo === "wait") estado("ok", esDirector ? "Dataset compartido · director" : "Dataset compartido");
     });
   } catch (e) {
