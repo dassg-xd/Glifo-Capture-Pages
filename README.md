@@ -1,1 +1,0 @@
-# Glifo-Capture-Pages
