@@ -1,0 +1,53 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "director": {
+      ".read": "auth != null && auth.token.email === 'CORREO_DEL_DIRECTOR' && auth.token.email_verified === true",
+      ".write": false
+    },
+
+    "indice": {
+      ".read": "auth != null",
+      ".indexOn": ["letra"],
+      "$id": {
+        ".write": "auth != null && ((!data.exists() && newData.child('uid').val() === auth.uid) || (data.exists() && !newData.exists() && (data.child('uid').val() === auth.uid || (auth.token.email === 'CORREO_DEL_DIRECTOR' && auth.token.email_verified === true))))",
+        ".validate": "newData.hasChildren(['uid', 'autor', 'grupo', 'letra', 'creado', 'puntos'])",
+        "uid": { ".validate": "newData.val() === auth.uid" },
+        "autor": { ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 40" },
+        "grupo": { ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 30 && newData.val() !== 'Sin grupo'" },
+        "letra": { ".validate": "newData.isString() && (newData.val().matches(/^[a-z]$/) || newData.val() === 'ñ')" },
+        "creado": { ".validate": "newData.val() === now" },
+        "puntos": { ".validate": "newData.isNumber() && newData.val() >= 8 && newData.val() <= 20000" },
+        "dispositivo": { ".validate": "newData.isString() && newData.val().length <= 10" },
+        "$otro": { ".validate": false }
+      }
+    },
+
+    "trazos": {
+      ".read": "auth != null",
+      ".indexOn": ["letra"],
+      "$id": {
+        ".write": "auth != null && ((!data.exists() && newData.child('uid').val() === auth.uid) || (data.exists() && !newData.exists() && (data.child('uid').val() === auth.uid || (auth.token.email === 'CORREO_DEL_DIRECTOR' && auth.token.email_verified === true))))",
+        ".validate": "newData.hasChildren(['uid', 'letra', 'trazos'])",
+        "uid": { ".validate": "newData.val() === auth.uid" },
+        "letra": { ".validate": "newData.isString() && (newData.val().matches(/^[a-z]$/) || newData.val() === 'ñ')" },
+        "trazos": { ".validate": "newData.hasChildren()" },
+        "$otro": { ".validate": false }
+      }
+    },
+
+    "presencia": {
+      ".read": "auth != null",
+      "$uid": {
+        ".write": "auth != null && auth.uid === $uid",
+        "autor": { ".validate": "newData.isString() && newData.val().length <= 40" },
+        "grupo": { ".validate": "newData.isString() && newData.val().length <= 30" },
+        "letra": { ".validate": "newData.isString() && newData.val().length <= 2" },
+        "t": { ".validate": "newData.val() === now" },
+        "$otro": { ".validate": false }
+      }
+    }
+  }
+}
