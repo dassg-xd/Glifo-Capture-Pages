@@ -4,7 +4,7 @@ import { getDatabase, ref, push, update, onValue, query, orderByChild, equalTo, 
 import { firebaseConfig } from "./firebase-config.js";
 
 const LETRAS = "abcdefghijklmnñopqrstuvwxyz".split("");
-const META = 30, ESPACIO = 1000;
+const META = 70, ESPACIO = 1000;
 const GUIAS = { ascendente: 180, alturaX: 420, base: 700, descendente: 900 };
 const clave = l => l === "ñ" ? "enie" : l;
 const SIN_GRUPO = "Sin grupo";
@@ -201,7 +201,7 @@ function renderMiniaturas(todas) {
   $("recentCount").textContent = lista.length ? `${lista.length} guardadas` : "";
   $("thumbsEmpty").hidden = lista.length > 0;
   const cont = $("thumbs"); cont.textContent = "";
-  for (const m of lista.slice(0, 18)) {
+  for (const m of lista) {
     const d = document.createElement("div"); d.className = "thumb";
     d.title = [m.autor || "anonimo", normGrupo(m.grupo), m.creado ? new Date(m.creado).toLocaleString("es-CO") : ""].join(" · ");
     const c = document.createElement("canvas"); c.width = 120; c.height = 120; d.appendChild(c);
@@ -356,7 +356,7 @@ function seguirLetra() {
   if (!db || !uid) return;
   if (soltarTrazos) soltarTrazos();
   trazosCache = {};
-  const q = query(ref(db, "trazos"), orderByChild("letra"), equalTo(actual), limitToLast(18));
+  const q = query(ref(db, "trazos"), orderByChild("letra"), equalTo(actual));
   soltarTrazos = onValue(q, snap => {
     const nuevo = {};
     snap.forEach(ch => { nuevo[ch.key] = (ch.val() || {}).trazos || []; });
