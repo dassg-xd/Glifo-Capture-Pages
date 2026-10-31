@@ -41,7 +41,7 @@ function ajustar() {
   cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr);
   dibujar();
 }
-const aLienzo = v => v / ESPACIO * cv.width;
+const aLienzoY = v => v / ESPACIO * cv.height;
 function dibujarGuias() {
   const w = cv.width, dpr = window.devicePixelRatio || 1;
   ctx.save();
@@ -49,7 +49,7 @@ function dibujarGuias() {
   ctx.textBaseline = "bottom";
   const nombres = { ascendente: "ascendente", alturaX: "altura x", base: "línea base", descendente: "descendente" };
   for (const [nombre, y] of Object.entries(GUIAS)) {
-    const yy = aLienzo(y);
+    const yy = aLienzoY(y);
     ctx.strokeStyle = nombre === "base" ? tok("--guide-strong") : tok("--guide");
     ctx.lineWidth = (nombre === "base" ? 1.5 : 1) * dpr;
     ctx.setLineDash(nombre === "base" ? [] : [6 * dpr, 6 * dpr]);
@@ -60,22 +60,23 @@ function dibujarGuias() {
   ctx.restore();
 }
 function dibujarTrazos(c, lista, escala, grosor, colorTrazo, colorInicio) {
-  c.lineCap = "round"; c.lineJoin = "round"; c.setLineDash([]);
+  const sx = Array.isArray(escala) ? escala[0] : escala, sy = Array.isArray(escala) ? escala[1] : escala;
+    c.lineCap = "round"; c.lineJoin = "round"; c.setLineDash([]);
   for (const p of lista) {
     if (!p.length) continue;
     c.strokeStyle = colorTrazo; c.lineWidth = grosor;
-    c.beginPath(); c.moveTo(p[0][0] * escala, p[0][1] * escala);
-    for (let i = 1; i < p.length; i++) c.lineTo(p[i][0] * escala, p[i][1] * escala);
-    if (p.length === 1) c.lineTo(p[0][0] * escala + 0.1, p[0][1] * escala);
+    c.beginPath(); c.moveTo(p[0][0] * sx, p[0][1] * sy);
+    for (let i = 1; i < p.length; i++) c.lineTo(p[i][0] * sx, p[i][1] * sy);
+    if (p.length === 1) c.lineTo(p[0][0] * sx + 0.1, p[0][1] * sy);
     c.stroke();
-    if (colorInicio) { c.fillStyle = colorInicio; c.beginPath(); c.arc(p[0][0] * escala, p[0][1] * escala, grosor * 0.9, 0, Math.PI * 2); c.fill(); }
+    if (colorInicio) { c.fillStyle = colorInicio; c.beginPath(); c.arc(p[0][0] * sx, p[0][1] * sy, grosor * 0.9, 0, Math.PI * 2); c.fill(); }
   }
 }
 function dibujar() {
   ctx.clearRect(0, 0, cv.width, cv.height);
   dibujarGuias();
   const dpr = window.devicePixelRatio || 1;
-  dibujarTrazos(ctx, trazos.map(s => s.puntos), cv.width / ESPACIO, 5 * dpr, tok("--ink"), tok("--teal"));
+  dibujarTrazos(ctx, trazos.map(s => s.puntos), [cv.width / ESPACIO, cv.height / ESPACIO], 5 * dpr, tok("--ink"), tok("--teal"));
   actualizarLectura();
 }
 let raf = 0;
