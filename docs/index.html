@@ -249,12 +249,13 @@ textarea#fallback{width:100%;height:160px;font-family:var(--mono);font-size:11px
 
     <div class="export">
       <h2>Exportar para entrenar</h2>
-      <p>Un solo archivo con las muestras de todos los grupos, o solo las de uno. Cada punto es <code>[x, y, t_ms]</code> en un espacio de 0 a 1000.</p>
+      <p>Ordenado por letra, de la a a la z. Cada fila es una muestra con sus trazos, y cada punto es <code>[x, y, t_ms]</code> en un espacio de 0 a 1000.</p>
       <div class="field">
         <label for="filtro">Incluir</label>
         <select id="filtro"><option value="">Todos los grupos</option></select>
       </div>
       <button class="btn teal" id="bExport">Descargar dataset .json</button>
+      <button class="linkbtn" id="bExportDet" style="align-self:flex-start">Descargar con detalles (autor, grupo y fecha)</button>
       <span class="msg" id="exportMsg"></span>
       <textarea id="fallback" hidden readonly aria-label="Contenido del dataset en JSON"></textarea>
     </div>

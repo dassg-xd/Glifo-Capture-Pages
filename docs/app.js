@@ -450,7 +450,7 @@ $("bDirector").onclick = async () => {
 // JSON legible: cabecera con una clave por línea, cada muestra en su bloque y cada trazo en una sola fila.
 function jsonLegible(data) {
   const { muestras, ...cab } = data;
-  const linea = (k, v, sangria) => sangria + JSON.stringify(k) + ": " + JSON.stringify(v);
+  const linea = (k, v, sangria) => sangria + JSON.stringify(k) + ": " + JSON.stringify(v === undefined ? null : v);
   const bloques = muestras.map(m => {
     const { trazos, ...meta } = m;
     const filas = trazos.map(t => "        " + JSON.stringify(t)).join(",\n");
@@ -460,7 +460,16 @@ function jsonLegible(data) {
   return "{\n" + Object.entries(cab).map(([k, v]) => linea(k, v, "  ")).join(",\n") +
     ',\n  "muestras": [\n' + bloques.join(",\n") + "\n  ]\n}\n";
 }
-$("bExport").onclick = async () => {
+// Formato para entrenar: un grupo por letra (a … z, con la ñ) y una fila por muestra.
+// Cada fila es la lista de trazos de esa muestra; cada trazo es una lista de puntos [x, y, t_ms].
+function jsonPorLetra(muestrasOrdenadas) {
+  const g = Object.fromEntries(LETRAS.map(l => [l, []]));
+  for (const m of muestrasOrdenadas) if (g[m.letra]) g[m.letra].push(m.trazos);
+  return "{\n" + LETRAS.map(l => g[l].length
+    ? "  " + JSON.stringify(l) + ": [\n" + g[l].map(t => "    " + JSON.stringify(t)).join(",\n") + "\n  ]"
+    : "  " + JSON.stringify(l) + ": []").join(",\n") + "\n}\n";
+}
+async function exportar(detalle) {
   const filtro = $("filtro").value, msg = $("exportMsg");
   let todos = {};
   try {
@@ -483,13 +492,15 @@ $("bExport").onclick = async () => {
     guias: GUIAS, letras: LETRAS, conteo, muestras: salida
   };
   const sufijo = filtro ? "-" + filtro.toLowerCase().normalize("NFD").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") : "";
-  const nombre = `glifo-dataset${sufijo}-${new Date().toISOString().slice(0, 10)}.json`;
+  const nombre = `glifo-dataset${detalle ? "-detalles" : ""}${sufijo}-${new Date().toISOString().slice(0, 10)}.json`;
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob([jsonLegible(data)], { type: "application/json" }));
+  a.href = URL.createObjectURL(new Blob([detalle ? jsonLegible(data) : jsonPorLetra(salida)], { type: "application/json" }));
   a.download = nombre; document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 4000);
   msg.textContent = `${salida.length} muestras exportadas en ${nombre}.`;
-};
+}
+$("bExport").onclick = () => exportar(false);
+$("bExportDet").onclick = () => exportar(true);
 
 // ---------- inicio ----------
 construirGrid();
