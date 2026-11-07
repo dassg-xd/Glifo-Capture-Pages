@@ -70,15 +70,16 @@ h2{margin:0;color:var(--ink);font-size:15px;font-weight:700}
 .prompt-fila{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
 .guia-btn{display:inline-flex;align-items:center;gap:6px}
 .guia-btn[aria-expanded="true"]{background:var(--primary);border-color:var(--primary);color:var(--primary-ink)}
-/* La guía ocupa su propio espacio en la cabecera: empuja el lienzo hacia abajo en vez de taparlo. */
-.guia-pop{width:230px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px 8px;box-shadow:0 6px 18px rgba(10,20,28,.12)}
-.guia-cab{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;color:var(--muted);font-weight:700}
-.guia-cab b{font-family:var(--letra);font-size:22px;line-height:30px;font-weight:500;color:var(--ink);padding-bottom:10px;margin-bottom:-8px}
+/* La guía es una franja bajo la cabecera: empuja el lienzo hacia abajo en vez de taparlo. */
+.guia-pop{flex:1 1 100%;display:flex;gap:16px;align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:8px 14px 8px 8px}
+.guia-pop[hidden]{display:none}
+#guiaSvg{flex:0 0 auto;display:block;width:132px;height:176px;background:var(--surface);border-radius:8px}
+.guia-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.guia-cab{align-self:stretch;display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:14px;color:var(--muted);font-weight:700}
+.guia-cab b{font-family:var(--letra);font-size:24px;line-height:32px;font-weight:500;color:var(--ink);padding-bottom:10px;margin-bottom:-8px}
 .guia-x{border:none;background:none;color:var(--muted);font-size:13px;padding:4px 6px;border-radius:6px}
 .guia-x:hover{background:var(--chip)}
-#guiaSvg{display:block;width:100%;height:auto;aspect-ratio:3/4;margin-top:4px}
-.guia-pie{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.guia-pie .msg{font-size:13px}
+.guia-info{margin:0;font-size:14px;color:var(--text)}
 
 .canvas-box{position:relative;margin:18px auto 0;width:min(100%,560px,70vh);aspect-ratio:1}
 canvas#cv{width:100%;height:100%;display:block;border-radius:14px;border:1.5px dashed var(--guide-strong);background:var(--surface);touch-action:none;cursor:crosshair}
@@ -211,16 +212,16 @@ dialog#dlgBorrar .linkbtn{align-self:flex-start}
               Guía de dibujo
             </button>
           </div>
-          <div class="guia-pop" id="guiaPop" role="region" aria-label="Guía de dibujo de la letra" hidden>
+        </div>
+        <div class="guia-pop" id="guiaPop" role="region" aria-label="Guía de dibujo de la letra" hidden>
+          <svg id="guiaSvg" viewBox="200 130 600 800" role="img" aria-label="Animación del orden de los trazos"></svg>
+          <div class="guia-txt">
             <div class="guia-cab">
               <span>Así se traza la <b id="guiaLetra">a</b></span>
               <button class="guia-x" id="guiaCerrar" aria-label="Cerrar la guía">✕</button>
             </div>
-            <svg id="guiaSvg" viewBox="200 130 600 800" role="img" aria-label="Animación del orden de los trazos"></svg>
-            <div class="guia-pie">
-              <span class="msg" id="guiaInfo"></span>
-              <button class="linkbtn" id="guiaRepetir">↻ Repetir</button>
-            </div>
+            <p class="guia-info" id="guiaInfo"></p>
+            <button class="linkbtn" id="guiaRepetir">↻ Repetir</button>
           </div>
         </div>
       </div>
@@ -336,6 +337,6 @@ dialog#dlgBorrar .linkbtn{align-self:flex-start}
   </form>
 </dialog>
 <!-- El ?v= cambia con cada versión para que el navegador no siga usando un app.js viejo guardado en caché. -->
-<script type="module" src="./app.js?v=2026-11-06"></script>
+<script type="module" src="./app.js?v=2026-11-07"></script>
 </body>
 </html>

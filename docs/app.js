@@ -2,6 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, linkWithPopup, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getDatabase, ref, push, update, onValue, query, orderByChild, equalTo, limitToLast, serverTimestamp, onDisconnect, set, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 import { firebaseConfig } from "./firebase-config.js";
+import { GUIA } from "./guia.js?v=2026-11-07";
 
 const LETRAS = "abcdefghijklmnñopqrstuvwxyz".split("");
 const META = 70, ESPACIO = 1000;
@@ -137,6 +138,7 @@ $("bUndo").onclick = deshacer;
 $("bSave").onclick = guardar;
 document.addEventListener("keydown", e => {
   if (e.target.closest("input,textarea,select")) return;
+  if (e.key === "Escape" && guiaAbierta) { cerrarGuia(); $("bGuia").focus(); return; }   // Esc cierra la guía sin borrar el lienzo
   if (e.key === "Enter" && !$("bSave").disabled) { e.preventDefault(); guardar(); }
   else if (e.key === "Escape") limpiar();
   else if (e.key === "z" || e.key === "Z") { if (e.ctrlKey || e.metaKey) e.preventDefault(); deshacer(); }
@@ -146,6 +148,7 @@ document.addEventListener("keydown", e => {
 function seleccionar(l) {
   actual = l; $("promptLetter").textContent = l;
   limpiar(); anunciar(); seguirLetra(); render();
+  if (guiaAbierta) pintarGuia();   // con la guía abierta, se actualiza sola a la nueva letra
 }
 function construirGrid() {
   for (const l of LETRAS) {
@@ -168,6 +171,86 @@ function siguiente() {
   seleccionar(opciones[Math.floor(Math.random() * opciones.length)]);
 }
 $("bNext").onclick = siguiente;
+
+// ---------- guía de dibujo ----------
+// Muestra cómo se traza la letra actual: la letra completa en gris claro y, encima, cada trazo se
+// dibuja solo y en orden, con su número en el punto donde empieza.
+const SVG_NS = "http://www.w3.org/2000/svg";
+let guiaAbierta = false, guiaAnims = [];
+function svgEl(tag, attrs) {
+  const n = document.createElementNS(SVG_NS, tag);
+  for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+  return n;
+}
+function pintarGuia() {
+  const svg = $("guiaSvg");
+  guiaAnims.forEach(a => a.cancel()); guiaAnims = [];
+  svg.textContent = "";
+  const lista = GUIA[actual] || [];
+  $("guiaLetra").textContent = actual;
+  $("guiaInfo").textContent = lista.length === 1
+    ? "1 trazo: se dibuja de una vez, sin levantar el lápiz, empezando en el 1."
+    : `${lista.length} trazos: empieza en el 1 y levanta el lápiz entre uno y otro, en orden.`;
+  for (const [nombre, y] of Object.entries(GUIAS)) {
+    const base = nombre === "base";
+    svg.appendChild(svgEl("line", { x1: 215, x2: 785, y1: y, y2: y, stroke: tok(base ? "--guide-strong" : "--guide"),
+      "stroke-width": base ? 5 : 4, ...(base ? {} : { "stroke-dasharray": "18 18" }) }));
+  }
+  const trazo = { fill: "none", "stroke-width": 26, "stroke-linecap": "round", "stroke-linejoin": "round" };
+  for (const d of lista) svg.appendChild(svgEl("path", { d, ...trazo, stroke: tok("--guide") }));   // la letra completa, de fondo
+  const quieto = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let t = 250;
+  const numeros = [];
+  lista.forEach((d, i) => {
+    const p = svgEl("path", { d, ...trazo, stroke: tok("--ink") });
+    svg.appendChild(p);
+    const largo = p.getTotalLength();
+    // El número va junto al inicio del trazo, hacia atrás de la dirección en que arranca, para no taparlo.
+    const a = p.getPointAtLength(0), b = p.getPointAtLength(Math.min(40, largo));
+    let dx = a.x - b.x, dy = a.y - b.y; const m = Math.hypot(dx, dy);
+    if (m < 1) { dx = -1; dy = 0; } else { dx /= m; dy /= m; }
+    // Si choca con un número anterior, prueba a los lados (perpendicular) y luego más lejos.
+    const opciones = [[dx, dy, 58], [-dy, dx, 58], [dy, -dx, 58], [dx, dy, 120], [-dy, dx, 120], [dy, -dx, 120]];
+    let cx, cy;
+    for (const [ux, uy, dist] of opciones) {
+      cx = Math.min(765, Math.max(235, a.x + ux * dist)); cy = Math.min(905, Math.max(165, a.y + uy * dist));
+      if (numeros.every(([x, y]) => Math.hypot(x - cx, y - cy) > 76)) break;
+    }
+    numeros.push([cx, cy]);
+    const num = svgEl("g", {});
+    num.appendChild(svgEl("circle", { cx, cy, r: 34, fill: tok("--teal") }));
+    const txt = svgEl("text", { x: cx, y: cy + 1, "text-anchor": "middle", "dominant-baseline": "central",
+      "font-size": 40, "font-weight": 700, "font-family": tok("--sans"), fill: "#fff" });
+    txt.textContent = i + 1; num.appendChild(txt);
+    svg.appendChild(num);
+    if (quieto) return;
+    const dur = Math.max(450, largo * 1.7);
+    if (largo < 5) guiaAnims.push(p.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 250, delay: t, fill: "both" }));   // un punto
+    else {
+      p.style.strokeDasharray = `${largo + 2} ${largo + 2}`;
+      guiaAnims.push(p.animate([{ strokeDashoffset: largo + 2 }, { strokeDashoffset: 0 }], { duration: dur, delay: t, fill: "both", easing: "ease-in-out" }));
+    }
+    guiaAnims.push(num.animate([{ opacity: 0, transform: "scale(.6)" }, { opacity: 1, transform: "scale(1)" }],
+      { duration: 220, delay: t, fill: "both" }));
+    num.style.transformOrigin = `${cx}px ${cy}px`; num.style.transformBox = "view-box";
+    t += (largo < 5 ? 250 : dur) + 300;
+  });
+}
+function abrirGuia() {
+  guiaAbierta = true; $("guiaPop").hidden = false; $("bGuia").setAttribute("aria-expanded", "true");
+  pintarGuia();
+}
+function cerrarGuia() {
+  guiaAbierta = false; $("guiaPop").hidden = true; $("bGuia").setAttribute("aria-expanded", "false");
+  guiaAnims.forEach(a => a.cancel()); guiaAnims = [];
+}
+$("bGuia").onclick = () => guiaAbierta ? cerrarGuia() : abrirGuia();
+$("guiaCerrar").onclick = cerrarGuia;
+$("guiaRepetir").onclick = pintarGuia;
+// Un clic afuera la cierra, salvo en el lienzo y en las letras: así se puede dibujar o cambiar de letra mirándola.
+document.addEventListener("pointerdown", e => {
+  if (guiaAbierta && !e.target.closest("#guiaPop, #bGuia, #cv, #grid, #bNext")) cerrarGuia();
+});
 
 // ---------- render ----------
 let rafRender = 0;
@@ -547,7 +630,7 @@ $("formBorrar").addEventListener("submit", async e => {
 // ---------- inicio ----------
 construirGrid();
 new ResizeObserver(ajustar).observe(cv);
-const repintar = () => { dibujar(); pedirRender(); };
+const repintar = () => { dibujar(); pedirRender(); if (guiaAbierta) pintarGuia(); };
 matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", repintar);
 if (document.fonts) document.fonts.ready.then(repintar);
 render();
