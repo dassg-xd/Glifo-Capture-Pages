@@ -344,6 +344,23 @@ async function borrar(m) {
     delete indice[m.id]; delete trazosCache[m.id]; guardarLocal(); pedirRender();
   }
 }
+// Borra TODAS las muestras del dataset (solo el director). Las reglas no dejan borrar /indice ni /trazos
+// de un golpe, pero sí cada muestra por separado: se envían actualizaciones de varias rutas por lotes,
+// cada una con el índice y los trazos de LOTE_BORRADO muestras, para no mandar una sola escritura enorme.
+const LOTE_BORRADO = 200;
+async function borrarTodo(alAvanzar) {
+  if (!db || !esDirector) throw new Error("solo-director");
+  const ids = Object.keys(indice);
+  let hechas = 0;
+  for (let i = 0; i < ids.length; i += LOTE_BORRADO) {
+    const rutas = {};
+    for (const id of ids.slice(i, i + LOTE_BORRADO)) { rutas["indice/" + id] = null; rutas["trazos/" + id] = null; }
+    await update(ref(db), rutas);
+    hechas += Object.keys(rutas).length / 2;
+    if (alAvanzar) alAvanzar(hechas, ids.length);
+  }
+  return hechas;
+}
 function guardarLocal() {
   try { localStorage.setItem(LOCAL_KEY, JSON.stringify(Object.entries(indice).map(([id, m]) => ({ id, ...m, trazos: trazosCache[id] })))); } catch (e) {}
 }
