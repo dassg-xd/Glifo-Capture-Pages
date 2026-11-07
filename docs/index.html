@@ -274,7 +274,6 @@ dialog#dlgBorrar .linkbtn{align-self:flex-start}
         <select id="filtro"><option value="">Todos los grupos</option></select>
       </div>
       <button class="btn teal" id="bExport">Descargar dataset .json</button>
-      <button class="linkbtn" id="bExportDet" style="align-self:flex-start">Descargar con detalles (autor, grupo y fecha)</button>
       <span class="msg" id="exportMsg"></span>
       <textarea id="fallback" hidden readonly aria-label="Contenido del dataset en JSON"></textarea>
     </div>
@@ -304,6 +303,7 @@ dialog#dlgBorrar .linkbtn{align-self:flex-start}
     </div>
   </form>
 </dialog>
-<script type="module" src="./app.js"></script>
+<!-- El ?v= cambia con cada versión para que el navegador no siga usando un app.js viejo guardado en caché. -->
+<script type="module" src="./app.js?v=2026-11-06"></script>
 </body>
 </html>
