@@ -50,11 +50,11 @@ Un detalle importante: la identidad anónima vive en el navegador. Si alguien bo
 
 ## Guía de dibujo
 
-Junto al recuadro **Dibuja** está el botón **Guía de dibujo**. Abre una franja encima del lienzo que muestra cómo se traza la letra actual: la letra completa en gris y, encima, cada trazo se dibuja solo y en orden, con su número (1, 2, 3) donde empieza. **Repetir** vuelve a mostrar la animación.
+Junto al recuadro **Dibuja** está el botón **Guía de dibujo**. La guía está activa siempre que se abre la página: es una franja encima del lienzo que muestra cómo se traza la letra actual: la letra completa en gris y, encima, cada trazo se dibuja solo y en orden, con su número (1, 2, 3) donde empieza. **Repetir** vuelve a mostrar la animación.
 
-- Si cambias de letra con la guía abierta, se actualiza sola.
+- Si cambias de letra con la guía activa, se actualiza sola.
 - Se puede dibujar en el lienzo con la guía abierta; no lo tapa.
-- Se cierra con la ✕, con el mismo botón, con `Esc` (sin borrar lo que hay en el lienzo) o con un clic fuera de ella.
+- El botón solo la desactiva o la vuelve a activar (la ✕ también la desactiva). Un clic afuera o `Esc` no la cierran; `Esc` sigue limpiando el lienzo.
 
 Los patrones están en `docs/guia.js`, en el mismo espacio de 0 a 1000 y sobre las mismas líneas guía del lienzo. Para cambiar cómo se enseña una letra, se edita su lista de trazos (cada trazo es un camino SVG, en el orden en que se dibuja).
 
