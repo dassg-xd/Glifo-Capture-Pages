@@ -21,6 +21,7 @@ let trazosCache = {};     // id -> [[x,y,t,...], ...] (solo la letra actual)
 let pares = [];           // [{uid, autor, grupo, letra, esYo}]
 let db = null, auth = null, uid = null, esDirector = false, modo = "wait", conectado = false;
 let soltarTrazos = null, soltarPresencia = null;
+let borrandoTodo = false;  // mientras dura el borrado total, el botón queda bloqueado
 
 // ---------- autor y grupo ----------
 for (const k of ["autor", "grupo"]) {
@@ -190,6 +191,7 @@ function render() {
   $("totalN").innerHTML = `${todas.length} <small>/ ${META * LETRAS.length}</small>`;
   $("totalBar").style.width = (total / (META * LETRAS.length) * 100) + "%";
   $("pendientes").textContent = pend ? `${pend} letras por completar` : "Todas las letras tienen su meta";
+  if (!borrandoTodo) $("bBorrarTodo").disabled = !todas.length;
   renderMiniaturas(todas); renderGrupos(todas); renderVivo(todas);
 }
 
@@ -422,6 +424,7 @@ async function comprobarDirector(intentos = 1) {
   const correo = u && !u.isAnonymous ? (u.email || (u.providerData[0] || {}).email || "Google") : "";
   $("bDirector").textContent = esDirector ? "Salir del modo director" : (correo ? `Salir (${correo})` : "Entrar como director");
   $("bDirector").title = correo ? "Sesión iniciada con " + correo : "";
+  $("admin").hidden = !esDirector;
   if (conectado) estado("ok", esDirector ? "Dataset compartido · director" : "Dataset compartido");
   pedirRender();
 }
