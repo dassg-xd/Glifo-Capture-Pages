@@ -52,7 +52,7 @@ Un detalle importante: la identidad anónima vive en el navegador. Si alguien bo
 Sirve para empezar un dataset nuevo. Solo aparece con la sesión de director iniciada.
 
 1. Pulsa **Borrar todo el dataset**. Se abre un aviso con el número de muestras que se van a perder.
-2. Si quieres conservarlas, pulsa **Descargar una copia de respaldo primero**: baja el JSON con detalles de todos los grupos, sin importar el filtro de exportación.
+2. Si quieres conservarlas, pulsa **Descargar una copia de respaldo primero**: baja el JSON de todos los grupos (el mismo formato de «Descargar dataset .json»), sin importar el filtro de exportación.
 3. Escribe `BORRAR` en la casilla. Hasta entonces el botón rojo no se activa; **Cancelar** o `Esc` cierran sin borrar nada.
 
 El borrado no se puede deshacer. Se hace por lotes de 200 muestras y muestra el avance. Si se corta (conexión o permisos), lo ya borrado no vuelve, y al intentarlo otra vez sigue con las que quedan.

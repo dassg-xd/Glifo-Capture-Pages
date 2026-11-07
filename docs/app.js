@@ -467,19 +467,6 @@ $("bDirector").onclick = async () => {
 };
 
 // ---------- exportar ----------
-// JSON legible: cabecera con una clave por línea, cada muestra en su bloque y cada trazo en una sola fila.
-function jsonLegible(data) {
-  const { muestras, ...cab } = data;
-  const linea = (k, v, sangria) => sangria + JSON.stringify(k) + ": " + JSON.stringify(v === undefined ? null : v);
-  const bloques = muestras.map(m => {
-    const { trazos, ...meta } = m;
-    const filas = trazos.map(t => "        " + JSON.stringify(t)).join(",\n");
-    return "    {\n" + Object.entries(meta).map(([k, v]) => linea(k, v, "      ")).join(",\n") +
-      ',\n      "trazos": [\n' + filas + "\n      ]\n    }";
-  });
-  return "{\n" + Object.entries(cab).map(([k, v]) => linea(k, v, "  ")).join(",\n") +
-    ',\n  "muestras": [\n' + bloques.join(",\n") + "\n  ]\n}\n";
-}
 // Formato para entrenar: un grupo por letra (a … z, con la ñ) y una fila por muestra.
 // Cada fila es la lista de trazos de esa muestra; cada trazo es una lista de puntos [x, y, t_ms].
 function jsonPorLetra(muestrasOrdenadas) {
@@ -489,7 +476,7 @@ function jsonPorLetra(muestrasOrdenadas) {
     ? "  " + JSON.stringify(l) + ": [\n" + g[l].map(t => "    " + JSON.stringify(t)).join(",\n") + "\n  ]"
     : "  " + JSON.stringify(l) + ": []").join(",\n") + "\n}\n";
 }
-async function exportar(detalle, { todos: todosLosGrupos = false, msg = $("exportMsg") } = {}) {
+async function exportar({ todos: todosLosGrupos = false, msg = $("exportMsg") } = {}) {
   const filtro = todosLosGrupos ? "" : $("filtro").value;
   let todos = {};
   try {
@@ -498,29 +485,17 @@ async function exportar(detalle, { todos: todosLosGrupos = false, msg = $("expor
     else todos = trazosCache;
   } catch (e) { msg.textContent = "No se pudieron descargar los trazos. Revisa tu conexión."; return; }
   const lista = muestras().filter(m => !filtro || normGrupo(m.grupo) === filtro).sort((a, b) => (a.creado || 0) - (b.creado || 0));
-  const salida = lista.filter(m => todos[m.id]).map(m => ({
-    id: m.id, usuario: m.uid, letra: m.letra, modo: "2D", autor: m.autor, grupo: normGrupo(m.grupo),
-    fecha: m.creado ? new Date(m.creado).toISOString() : null, dispositivo: m.dispositivo, espacio: ESPACIO,
-    trazos: aPuntos(todos[m.id])
-  }));
+  const salida = lista.filter(m => todos[m.id]).map(m => ({ letra: m.letra, trazos: aPuntos(todos[m.id]) }));
   if (!salida.length) { msg.textContent = "Aún no hay muestras para exportar."; return; }
-  const conteo = Object.fromEntries(LETRAS.map(l => [l, 0]));
-  for (const m of salida) conteo[m.letra]++;
-  const data = {
-    proyecto: "Glifo", version: 2, generado: new Date().toISOString(), grupo: filtro || "todos",
-    formato: "trazos = lista de trazos; cada trazo = lista de [x, y, t_ms]. x,y en 0..espacio (y crece hacia abajo). t_ms desde el primer toque de la muestra.",
-    guias: GUIAS, letras: LETRAS, conteo, muestras: salida
-  };
   const sufijo = filtro ? "-" + filtro.toLowerCase().normalize("NFD").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") : "";
-  const nombre = `glifo-dataset${detalle ? "-detalles" : ""}${sufijo}-${new Date().toISOString().slice(0, 10)}.json`;
+  const nombre = `glifo-dataset${sufijo}-${new Date().toISOString().slice(0, 10)}.json`;
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob([detalle ? jsonLegible(data) : jsonPorLetra(salida)], { type: "application/json" }));
+  a.href = URL.createObjectURL(new Blob([jsonPorLetra(salida)], { type: "application/json" }));
   a.download = nombre; document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 4000);
   msg.textContent = `${salida.length} muestras exportadas en ${nombre}.`;
 }
-$("bExport").onclick = () => exportar(false);
-$("bExportDet").onclick = () => exportar(true);
+$("bExport").onclick = () => exportar();
 
 // ---------- borrar todo (director) ----------
 // Doble protección contra borrados accidentales: un diálogo que muestra cuántas muestras se pierden
@@ -546,7 +521,7 @@ $("dlgTexto").addEventListener("input", () => {
 });
 $("dlgCancelar").onclick = () => dlg.close();
 dlg.addEventListener("cancel", e => { if (borrandoTodo) e.preventDefault(); });   // Esc no cierra a mitad del borrado
-$("dlgRespaldo").onclick = () => exportar(true, { todos: true, msg: $("dlgMsg") });
+$("dlgRespaldo").onclick = () => exportar({ todos: true, msg: $("dlgMsg") });
 $("formBorrar").addEventListener("submit", async e => {
   e.preventDefault();
   if ($("dlgTexto").value.trim().toUpperCase() !== PALABRA || borrandoTodo) return;
