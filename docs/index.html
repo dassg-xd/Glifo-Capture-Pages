@@ -69,7 +69,7 @@ h2{margin:0;color:var(--ink);font-size:15px;font-weight:700}
 .prompt-col{display:flex;flex-direction:column;align-items:flex-end;gap:10px}
 .prompt-fila{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
 .guia-btn{display:inline-flex;align-items:center;gap:6px}
-.guia-btn[aria-expanded="true"]{background:var(--primary);border-color:var(--primary);color:var(--primary-ink)}
+.guia-btn[aria-pressed="true"]{background:var(--primary);border-color:var(--primary);color:var(--primary-ink)}
 /* La guía es una franja bajo la cabecera: empuja el lienzo hacia abajo en vez de taparlo. */
 .guia-pop{flex:1 1 100%;display:flex;gap:16px;align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:8px 14px 8px 8px}
 .guia-pop[hidden]{display:none}
@@ -207,18 +207,18 @@ dialog#dlgBorrar .linkbtn{align-self:flex-start}
         <div class="prompt-col">
           <div class="prompt-fila">
             <div class="prompt"><span>Dibuja</span><b id="promptLetter">a</b></div>
-            <button class="btn chico guia-btn" id="bGuia" aria-expanded="false" aria-controls="guiaPop" title="Muestra cómo se traza la letra, trazo por trazo">
+            <button class="btn chico guia-btn" id="bGuia" aria-pressed="true" aria-controls="guiaPop" title="Ocultar la guía de dibujo">
               <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v15H5.5c-.8 0-1.5.7-1.5 1.5zM20 5.5c0-.8-.7-1.5-1.5-1.5H13v15h5.5c.8 0 1.5.7 1.5 1.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
               Guía de dibujo
             </button>
           </div>
         </div>
-        <div class="guia-pop" id="guiaPop" role="region" aria-label="Guía de dibujo de la letra" hidden>
+        <div class="guia-pop" id="guiaPop" role="region" aria-label="Guía de dibujo de la letra">
           <svg id="guiaSvg" viewBox="200 130 600 800" role="img" aria-label="Animación del orden de los trazos"></svg>
           <div class="guia-txt">
             <div class="guia-cab">
               <span>Así se traza la <b id="guiaLetra">a</b></span>
-              <button class="guia-x" id="guiaCerrar" aria-label="Cerrar la guía">✕</button>
+              <button class="guia-x" id="guiaCerrar" aria-label="Ocultar la guía">✕</button>
             </div>
             <p class="guia-info" id="guiaInfo"></p>
             <button class="linkbtn" id="guiaRepetir">↻ Repetir</button>
@@ -337,6 +337,6 @@ dialog#dlgBorrar .linkbtn{align-self:flex-start}
   </form>
 </dialog>
 <!-- El ?v= cambia con cada versión para que el navegador no siga usando un app.js viejo guardado en caché. -->
-<script type="module" src="./app.js?v=2026-11-07"></script>
+<script type="module" src="./app.js?v=2026-11-07b"></script>
 </body>
 </html>

@@ -2,7 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, linkWithPopup, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getDatabase, ref, push, update, onValue, query, orderByChild, equalTo, limitToLast, serverTimestamp, onDisconnect, set, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 import { firebaseConfig } from "./firebase-config.js";
-import { GUIA } from "./guia.js?v=2026-11-07";
+import { GUIA } from "./guia.js?v=2026-11-07b";
 
 const LETRAS = "abcdefghijklmnñopqrstuvwxyz".split("");
 const META = 70, ESPACIO = 1000;
@@ -138,7 +138,6 @@ $("bUndo").onclick = deshacer;
 $("bSave").onclick = guardar;
 document.addEventListener("keydown", e => {
   if (e.target.closest("input,textarea,select")) return;
-  if (e.key === "Escape" && guiaAbierta) { cerrarGuia(); $("bGuia").focus(); return; }   // Esc cierra la guía sin borrar el lienzo
   if (e.key === "Enter" && !$("bSave").disabled) { e.preventDefault(); guardar(); }
   else if (e.key === "Escape") limpiar();
   else if (e.key === "z" || e.key === "Z") { if (e.ctrlKey || e.metaKey) e.preventDefault(); deshacer(); }
@@ -148,7 +147,7 @@ document.addEventListener("keydown", e => {
 function seleccionar(l) {
   actual = l; $("promptLetter").textContent = l;
   limpiar(); anunciar(); seguirLetra(); render();
-  if (guiaAbierta) pintarGuia();   // con la guía abierta, se actualiza sola a la nueva letra
+  if (guiaAbierta) pintarGuia();   // con la guía activa, se actualiza sola a la nueva letra
 }
 function construirGrid() {
   for (const l of LETRAS) {
@@ -176,7 +175,7 @@ $("bNext").onclick = siguiente;
 // Muestra cómo se traza la letra actual: la letra completa en gris claro y, encima, cada trazo se
 // dibuja solo y en orden, con su número en el punto donde empieza.
 const SVG_NS = "http://www.w3.org/2000/svg";
-let guiaAbierta = false, guiaAnims = [];
+let guiaAbierta = false, guiaAnims = [];   // la guía arranca activa (ver más abajo)
 function svgEl(tag, attrs) {
   const n = document.createElementNS(SVG_NS, tag);
   for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
@@ -236,21 +235,21 @@ function pintarGuia() {
     t += (largo < 5 ? 250 : dur) + 300;
   });
 }
+// La guía está activa siempre al abrir la página; el botón solo la desactiva o la vuelve a activar.
 function abrirGuia() {
-  guiaAbierta = true; $("guiaPop").hidden = false; $("bGuia").setAttribute("aria-expanded", "true");
+  guiaAbierta = true; $("guiaPop").hidden = false;
+  $("bGuia").setAttribute("aria-pressed", "true"); $("bGuia").title = "Ocultar la guía de dibujo";
   pintarGuia();
 }
 function cerrarGuia() {
-  guiaAbierta = false; $("guiaPop").hidden = true; $("bGuia").setAttribute("aria-expanded", "false");
+  guiaAbierta = false; $("guiaPop").hidden = true;
+  $("bGuia").setAttribute("aria-pressed", "false"); $("bGuia").title = "Mostrar la guía de dibujo";
   guiaAnims.forEach(a => a.cancel()); guiaAnims = [];
 }
 $("bGuia").onclick = () => guiaAbierta ? cerrarGuia() : abrirGuia();
 $("guiaCerrar").onclick = cerrarGuia;
 $("guiaRepetir").onclick = pintarGuia;
-// Un clic afuera la cierra, salvo en el lienzo y en las letras: así se puede dibujar o cambiar de letra mirándola.
-document.addEventListener("pointerdown", e => {
-  if (guiaAbierta && !e.target.closest("#guiaPop, #bGuia, #cv, #grid, #bNext")) cerrarGuia();
-});
+abrirGuia();   // activa desde que se abre la página
 
 // ---------- render ----------
 let rafRender = 0;
