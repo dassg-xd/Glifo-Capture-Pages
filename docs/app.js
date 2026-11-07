@@ -489,8 +489,8 @@ function jsonPorLetra(muestrasOrdenadas) {
     ? "  " + JSON.stringify(l) + ": [\n" + g[l].map(t => "    " + JSON.stringify(t)).join(",\n") + "\n  ]"
     : "  " + JSON.stringify(l) + ": []").join(",\n") + "\n}\n";
 }
-async function exportar(detalle) {
-  const filtro = $("filtro").value, msg = $("exportMsg");
+async function exportar(detalle, { todos: todosLosGrupos = false, msg = $("exportMsg") } = {}) {
+  const filtro = todosLosGrupos ? "" : $("filtro").value;
   let todos = {};
   try {
     msg.textContent = "Preparando archivo…";
@@ -521,6 +521,53 @@ async function exportar(detalle) {
 }
 $("bExport").onclick = () => exportar(false);
 $("bExportDet").onclick = () => exportar(true);
+
+// ---------- borrar todo (director) ----------
+// Doble protección contra borrados accidentales: un diálogo que muestra cuántas muestras se pierden
+// y exige escribir BORRAR. El botón de confirmar solo se activa con esa palabra exacta.
+const PALABRA = "BORRAR";
+const dlg = $("dlgBorrar");
+const nMuestras = n => `${n} ${n === 1 ? "muestra" : "muestras"}`;
+function abrirBorrado() {
+  if (!esDirector) { sello("Solo el director puede borrar todo el dataset.", true); return; }
+  const n = muestras().length;
+  if (!n) { $("adminMsg").textContent = "El dataset ya está vacío."; return; }
+  $("dlgN").textContent = nMuestras(n);
+  $("dlgConfirmar").textContent = `Borrar ${nMuestras(n)}`;
+  $("dlgTexto").value = ""; $("dlgTexto").disabled = false;
+  $("dlgConfirmar").disabled = true; $("dlgCancelar").disabled = false;
+  $("dlgMsg").textContent = "";
+  dlg.showModal();
+  $("dlgCancelar").focus();   // el foco empieza en Cancelar, no en el botón peligroso
+}
+$("bBorrarTodo").onclick = abrirBorrado;
+$("dlgTexto").addEventListener("input", () => {
+  $("dlgConfirmar").disabled = $("dlgTexto").value.trim().toUpperCase() !== PALABRA;
+});
+$("dlgCancelar").onclick = () => dlg.close();
+dlg.addEventListener("cancel", e => { if (borrandoTodo) e.preventDefault(); });   // Esc no cierra a mitad del borrado
+$("dlgRespaldo").onclick = () => exportar(true, { todos: true, msg: $("dlgMsg") });
+$("formBorrar").addEventListener("submit", async e => {
+  e.preventDefault();
+  if ($("dlgTexto").value.trim().toUpperCase() !== PALABRA || borrandoTodo) return;
+  borrandoTodo = true;
+  for (const id of ["dlgConfirmar", "dlgCancelar", "dlgTexto", "dlgRespaldo", "bBorrarTodo"]) $(id).disabled = true;
+  $("dlgMsg").textContent = "Borrando…";
+  try {
+    const n = await borrarTodo((hechas, total) => { $("dlgMsg").textContent = `Borrando… ${hechas} de ${total}`; });
+    dlg.close();
+    $("adminMsg").textContent = `Se borraron ${nMuestras(n)}.`;
+    sello(`Dataset borrado: ${nMuestras(n)}`);
+  } catch (err) {
+    $("dlgMsg").textContent = String(err && err.code || "").includes("PERMISSION")
+      ? "Firebase rechazó el borrado. Revisa que entraste con el correo del director. Lo que alcanzó a borrarse no se recupera."
+      : "Se cortó el borrado. Revisa tu conexión y vuelve a intentarlo: seguirá con las muestras que quedan.";
+    $("dlgCancelar").disabled = false;
+  } finally {
+    borrandoTodo = false; $("dlgRespaldo").disabled = false;
+    pedirRender();
+  }
+});
 
 // ---------- inicio ----------
 construirGrid();

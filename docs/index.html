@@ -157,6 +157,13 @@ textarea#fallback{width:100%;height:160px;font-family:var(--mono);font-size:11px
 .admin h2{color:var(--danger)}
 .admin p{margin:0;font-size:14px;color:var(--muted)}
 .admin .btn{align-self:flex-start}
+dialog#dlgBorrar{border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--text);padding:22px;width:min(440px,calc(100vw - 32px))}
+dialog#dlgBorrar::backdrop{background:rgba(10,20,28,.55)}
+dialog#dlgBorrar form{display:flex;flex-direction:column;gap:12px}
+dialog#dlgBorrar h2{color:var(--danger);font-size:17px}
+dialog#dlgBorrar p{margin:0;font-size:14px}
+dialog#dlgBorrar .linkbtn{align-self:flex-start}
+.dlg-acciones{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:4px}
 .config{max-width:1280px;margin:16px auto 0;background:var(--chip);border:1px solid var(--line);border-radius:12px;padding:12px 16px;font-size:14px;color:var(--ink)}
 .config-wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .config code{font-family:var(--mono);font-size:12.5px}
@@ -280,6 +287,23 @@ textarea#fallback{width:100%;height:160px;font-family:var(--mono);font-size:11px
     </div>
   </aside>
 </main>
+
+<dialog id="dlgBorrar" aria-labelledby="dlgTitulo">
+  <form method="dialog" id="formBorrar">
+    <h2 id="dlgTitulo">¿Borrar todo el dataset?</h2>
+    <p>Se van a borrar <b id="dlgN">0 muestras</b> de todos los grupos, con sus trazos. <b>No se puede deshacer.</b></p>
+    <button type="button" class="linkbtn" id="dlgRespaldo">Descargar una copia de respaldo primero</button>
+    <div class="field">
+      <label for="dlgTexto">Escribe BORRAR para confirmar</label>
+      <input id="dlgTexto" autocomplete="off" spellcheck="false" autocapitalize="characters">
+    </div>
+    <span class="msg" id="dlgMsg" aria-live="polite"></span>
+    <div class="dlg-acciones">
+      <button type="button" class="btn" id="dlgCancelar">Cancelar</button>
+      <button type="submit" class="btn peligro" id="dlgConfirmar" disabled>Borrar todo</button>
+    </div>
+  </form>
+</dialog>
 <script type="module" src="./app.js"></script>
 </body>
 </html>
