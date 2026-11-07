@@ -33,6 +33,7 @@ Página pública para recolectar trazos de letras entre todos los grupos. No nec
 - Escribe un nombre y un grupo, dibuja una letra y guárdala.
 - Ábrelo en otro dispositivo: debe verse la muestra y, en **En vivo**, la otra persona.
 - Pulsa **Entrar como director** e inicia sesión con el correo que pusiste en las reglas. El indicador cambia a **director** y aparece la ✕ en todas las muestras.
+- Como director aparece abajo a la derecha la sección **Administración** con el botón **Borrar todo el dataset** (ver más abajo).
 
 ## Cómo quedan los permisos
 
@@ -41,9 +42,22 @@ Las reglas de Firebase hacen cumplir esto en el servidor, no solo en la pantalla
 - No se acepta una muestra sin nombre (2 a 40 caracteres) y grupo (1 a 30), ni con menos de 8 puntos.
 - Cada navegador solo puede borrar las muestras que guardó él mismo.
 - Solo el correo del director puede borrar cualquier muestra.
+- Solo el director ve y puede usar **Borrar todo el dataset**.
 - Nadie puede modificar una muestra ya guardada; solo borrarla y volver a dibujarla.
 
 Un detalle importante: la identidad anónima vive en el navegador. Si alguien borra los datos del navegador o cambia de dispositivo, ya no puede borrar lo que guardó antes. En ese caso, el director puede borrarlo.
+
+## Borrar todo el dataset (director)
+
+Sirve para empezar un dataset nuevo. Solo aparece con la sesión de director iniciada.
+
+1. Pulsa **Borrar todo el dataset**. Se abre un aviso con el número de muestras que se van a perder.
+2. Si quieres conservarlas, pulsa **Descargar una copia de respaldo primero**: baja el JSON con detalles de todos los grupos, sin importar el filtro de exportación.
+3. Escribe `BORRAR` en la casilla. Hasta entonces el botón rojo no se activa; **Cancelar** o `Esc` cierran sin borrar nada.
+
+El borrado no se puede deshacer. Se hace por lotes de 200 muestras y muestra el avance. Si se corta (conexión o permisos), lo ya borrado no vuelve, y al intentarlo otra vez sigue con las que quedan.
+
+No hace falta cambiar las reglas: las actuales ya permiten que el director borre cualquier muestra.
 
 ## Límites del plan gratuito
 

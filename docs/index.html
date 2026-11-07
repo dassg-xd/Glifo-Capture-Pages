@@ -151,6 +151,19 @@ canvas#cv{width:100%;height:100%;display:block;border-radius:14px;border:1.5px d
 .msg{font-size:14px;color:var(--muted)}
 textarea#fallback{width:100%;height:160px;font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-radius:10px;background:var(--bg);padding:10px;resize:vertical}
 .btn.chico{padding:7px 14px;font-size:13px}
+.btn.peligro{background:var(--danger);border-color:var(--danger);color:#fff}
+.btn.peligro:hover:not(:disabled){filter:brightness(1.07);border-color:var(--danger)}
+.admin{border-top:1px solid var(--line);padding-top:18px;display:flex;flex-direction:column;gap:10px}
+.admin h2{color:var(--danger)}
+.admin p{margin:0;font-size:14px;color:var(--muted)}
+.admin .btn{align-self:flex-start}
+dialog#dlgBorrar{border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--text);padding:22px;width:min(440px,calc(100vw - 32px))}
+dialog#dlgBorrar::backdrop{background:rgba(10,20,28,.55)}
+dialog#dlgBorrar form{display:flex;flex-direction:column;gap:12px}
+dialog#dlgBorrar h2{color:var(--danger);font-size:17px}
+dialog#dlgBorrar p{margin:0;font-size:14px}
+dialog#dlgBorrar .linkbtn{align-self:flex-start}
+.dlg-acciones{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:4px}
 .config{max-width:1280px;margin:16px auto 0;background:var(--chip);border:1px solid var(--line);border-radius:12px;padding:12px 16px;font-size:14px;color:var(--ink)}
 .config-wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .config code{font-family:var(--mono);font-size:12.5px}
@@ -265,8 +278,32 @@ textarea#fallback{width:100%;height:160px;font-family:var(--mono);font-size:11px
       <span class="msg" id="exportMsg"></span>
       <textarea id="fallback" hidden readonly aria-label="Contenido del dataset en JSON"></textarea>
     </div>
+
+    <div class="admin" id="admin" hidden>
+      <h2>Administración</h2>
+      <p>Solo el director ve esta sección. Borra todas las muestras de todos los grupos para empezar un dataset nuevo.</p>
+      <button class="btn peligro" id="bBorrarTodo">Borrar todo el dataset</button>
+      <span class="msg" id="adminMsg"></span>
+    </div>
   </aside>
 </main>
+
+<dialog id="dlgBorrar" aria-labelledby="dlgTitulo">
+  <form method="dialog" id="formBorrar">
+    <h2 id="dlgTitulo">¿Borrar todo el dataset?</h2>
+    <p>Se van a borrar <b id="dlgN">0 muestras</b> de todos los grupos, con sus trazos. <b>No se puede deshacer.</b></p>
+    <button type="button" class="linkbtn" id="dlgRespaldo">Descargar una copia de respaldo primero</button>
+    <div class="field">
+      <label for="dlgTexto">Escribe BORRAR para confirmar</label>
+      <input id="dlgTexto" autocomplete="off" spellcheck="false" autocapitalize="characters">
+    </div>
+    <span class="msg" id="dlgMsg" aria-live="polite"></span>
+    <div class="dlg-acciones">
+      <button type="button" class="btn" id="dlgCancelar">Cancelar</button>
+      <button type="submit" class="btn peligro" id="dlgConfirmar" disabled>Borrar todo</button>
+    </div>
+  </form>
+</dialog>
 <script type="module" src="./app.js"></script>
 </body>
 </html>
