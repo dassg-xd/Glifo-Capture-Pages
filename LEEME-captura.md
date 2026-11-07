@@ -8,6 +8,7 @@ Página pública para recolectar trazos de letras entre todos los grupos. No nec
 |---|---|---|
 | `docs/index.html` | La página | Sí |
 | `docs/app.js` | La lógica (dibujo, guardado, tiempo real) | Sí |
+| `docs/guia.js` | Los patrones de la guía de dibujo | Sí |
 | `docs/firebase-config.js` | Los datos de tu proyecto de Firebase | Sí, después de llenarlo |
 | `database.rules.json` | Reglas de seguridad de la base | **No.** Se pega en la consola de Firebase |
 
@@ -46,6 +47,16 @@ Las reglas de Firebase hacen cumplir esto en el servidor, no solo en la pantalla
 - Nadie puede modificar una muestra ya guardada; solo borrarla y volver a dibujarla.
 
 Un detalle importante: la identidad anónima vive en el navegador. Si alguien borra los datos del navegador o cambia de dispositivo, ya no puede borrar lo que guardó antes. En ese caso, el director puede borrarlo.
+
+## Guía de dibujo
+
+Junto al recuadro **Dibuja** está el botón **Guía de dibujo**. Abre una franja encima del lienzo que muestra cómo se traza la letra actual: la letra completa en gris y, encima, cada trazo se dibuja solo y en orden, con su número (1, 2, 3) donde empieza. **Repetir** vuelve a mostrar la animación.
+
+- Si cambias de letra con la guía abierta, se actualiza sola.
+- Se puede dibujar en el lienzo con la guía abierta; no lo tapa.
+- Se cierra con la ✕, con el mismo botón, con `Esc` (sin borrar lo que hay en el lienzo) o con un clic fuera de ella.
+
+Los patrones están en `docs/guia.js`, en el mismo espacio de 0 a 1000 y sobre las mismas líneas guía del lienzo. Para cambiar cómo se enseña una letra, se edita su lista de trazos (cada trazo es un camino SVG, en el orden en que se dibuja).
 
 ## Borrar todo el dataset (director)
 
